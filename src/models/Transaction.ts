@@ -2,12 +2,15 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+
 import Category from './Category';
+
+export type TransactionType = 'income' | 'outcome';
 
 @Entity('transactions')
 class Transaction {
@@ -17,18 +20,22 @@ class Transaction {
   @Column()
   title: string;
 
-  @Column()
-  type: 'income' | 'outcome';
-
-  @Column('decimal')
+  @Column({ type: 'decimal', precision: 17, scale: 2 })
   value: number;
 
-  @ManyToOne(() => Category)
-  @JoinColumn({ name: 'category_id' })
-  category: Category;
+  @Column({
+    type: 'enum',
+    enum: ['income', 'outcome'],
+    default: 'income',
+  })
+  type: TransactionType;
 
   @Column()
   category_id: string;
+
+  @ManyToOne(() => Category, category => category.transaction, { eager: true })
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
 
   @CreateDateColumn()
   created_at: Date;
